@@ -36,6 +36,13 @@ const authForm =css`
     width: 100%;
 `;
 
+const errorMsg =css`
+    margin-left: 5px;
+    margin-bottom: 20px;
+    font-size: 12px;
+    color: red;
+`;
+
 const inputLabel =css`
     margin-left: 5px;
     font-size: 12px;
@@ -75,37 +82,49 @@ const register =css`
     
 `;
 
+
+
+
 const Register = () => {
 
     const [registerUser, setRegisterUser] = useState({email: "", password: "", name: ""})
+    const [errorMessages, setErrorMessages] = useState({email: "", password: "", name: ""})
 
     const onChangeHandle = (e) => {
         const {name, value} = e.target;
         setRegisterUser({...registerUser, [name]: value})
     }
 
-    const registeSubmit = () => {
+    const registeSubmit = async () => {
         const data = {
             ...registerUser
         }
-
         const option = {
             headers: {
                 "Content-Type": "application/json"
             }
         }
-        axios
-        .post("http://localhost:8080/auth/signup", JSON.stringify(data), option)
-        .then(response => {      // success
-            console.log("성공"); 
+        // await은 async 안에만 쓸수 있다.
+        // await 호출에 return이 있는경우 변수에 담을 수 있다.
+        try {
+            const response = await axios.post("http://localhost:8080/auth/signup", JSON.stringify(data), option);    // Promise
+            setErrorMessages({email: "", password: "", name: ""});
             console.log(response);
-        })
-        .catch(error => {
-            console.log("에러");
-            console.log(error.response.data);
-        });
+        } catch (error) {
+            setErrorMessages({email: "", password: "", name: "", ...error.response.data.errorData});
+        }
 
-        console.log("비동기 테스트");
+        // .then(response => {      // resolve 
+        //     setErrorMessages({email: "", password: "", name: ""});
+        //     console.log(response);
+        //     // return "test";      // then에서 받은 return은 Promise이다.
+        // })
+        // .catch(error => {       // reject
+        //     console.log(error.response.data.errorData)
+        //     setErrorMessages({email: "", password: "", name: "", ...error.response.data.errorData});
+            
+        // });
+
     }
 
     return (
@@ -119,14 +138,17 @@ const Register = () => {
                     <LoginInput type="email" placeholder="Type your email" onChange={onChangeHandle} name="email">
                         <FiUser />
                     </LoginInput>
-                    <label css={inputLabel} >Password</label>
+                    <div css={errorMsg}>{errorMessages.email}</div>
+                    <label css={inputLabel}>Password</label>
                     <LoginInput type="password" placeholder="Type your password" onChange={onChangeHandle} name="password">
                         <FiLock />
                     </LoginInput>
+                    <div css={errorMsg}>{errorMessages.password}</div>
                     <label css={inputLabel} >Name</label>
                     <LoginInput type="text" placeholder="Type your name" onChange={onChangeHandle} name="name">
                         <BiRename />
                     </LoginInput>
+                    <div css={errorMsg}>{errorMessages.name}</div>
                     
                     <button css={loginButton} onClick={registeSubmit}>REGISTER</button>
                 </div>
