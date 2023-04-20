@@ -1,11 +1,14 @@
 /** @jsxImportSource @emotion/react */
 import { css } from '@emotion/react';
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import LoginInput from '../../components/UI/Login/LoginInput/LoginInput';
 import { FiUser,FiLock } from 'react-icons/fi';
 import {BsGoogle} from 'react-icons/bs';
 import {SiNaver,SiKakao} from 'react-icons/si';
+import axios from 'axios';
+import { authenticated } from '../../index';
+import { useRecoilState } from 'recoil';
 // import { FcGoogle } from 'react-icons/fc';
 
 const container = css`
@@ -111,7 +114,50 @@ const register =css`
     
 `;
 
+const errorMsg =css`
+    margin-left: 5px;
+    margin-bottom: 20px;
+    font-size: 12px;
+    color: red;
+`;
+
 const Login = () => {
+
+    const [loginUser, setLoginUser] = useState({email: "", password: ""});
+    const [errorMessages, setErrorMessages] = useState({email: "", password: ""});
+    const [ auth ,setAuth] = useRecoilState(authenticated);
+    const navigate = useNavigate();
+
+    const handleChange = (e) =>{
+        const {name, value} = e.target;
+        setLoginUser({...loginUser, [name]: value})
+    }
+
+    const loginHandleSubmit = async () =>{
+        // data가 loginUser이니까 Json으로 넣어줘도 됨.
+        // const data = {
+        //     ...loginUser
+        // }
+        const option = {
+            // 'headers' 이다.
+            headers: {
+                "Content-Type": "application/json"
+            }
+        }
+        // LocalStorage에 저장 setItem에서 key값, value값을 저장. value값은 저장하고 싶은 값을 넣어줌. 
+        try {
+            const response = await axios.post("http://localhost:8080/auth/login", JSON.stringify(loginUser), option);
+            setErrorMessages({email: "", password: ""});
+            const accessToken = response.data.grantType + " " + response.data.accessToken;
+            localStorage.setItem("accessToken", accessToken);
+            setAuth(true);
+            navigate("/");
+        } catch (error) {
+            setErrorMessages({email: "", password: "", ...error.response.data.errorData});
+            setAuth(false);
+        }
+    }
+    // name을 지정해줄 것.
     return (
         <div css={container}>
             <header>
@@ -119,16 +165,18 @@ const Login = () => {
             </header>
             <main css={mainContainer}>
                 <div css={authForm}>
-                    <label css={inputLabel}>Email</label>
-                    <LoginInput type="email" placeholder="Type your email">
+                    <label css={inputLabel}>Email</label>                                           
+                    <LoginInput type="email" placeholder="Type your email" onChange={handleChange} name="email"> 
                         <FiUser />
                     </LoginInput>
+                    <div css={errorMsg}>{errorMessages.email}</div>
                     <label css={inputLabel} >Password</label>
-                    <LoginInput type="password" placeholder="Type your password">
+                    <LoginInput type="password" placeholder="Type your password" onChange={handleChange} name="password">
                         <FiLock />
                     </LoginInput>
+                    <div css={errorMsg}>{errorMessages.password}</div>
                     <div css={forgotPassword}><Link to="/forgot/password">Frogot Password?</Link></div>
-                    <button css={loginButton}>LOGIN</button>
+                    <button css={loginButton} onClick={loginHandleSubmit}>LOGIN</button>
                 </div>
             </main>
                 <div css={signupMessage}>Or Sign Up Using</div>

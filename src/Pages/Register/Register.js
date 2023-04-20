@@ -1,7 +1,7 @@
 /** @jsxImportSource @emotion/react */
 import { css } from '@emotion/react';
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import LoginInput from '../../components/UI/Login/LoginInput/LoginInput';
 import { FiUser,FiLock } from 'react-icons/fi';
 import {BiRename} from 'react-icons/bi';
@@ -86,6 +86,7 @@ const register =css`
 
 
 const Register = () => {
+    const navigate = useNavigate();
 
     const [registerUser, setRegisterUser] = useState({email: "", password: "", name: ""})
     const [errorMessages, setErrorMessages] = useState({email: "", password: "", name: ""})
@@ -107,9 +108,10 @@ const Register = () => {
         // await은 async 안에만 쓸수 있다.
         // await 호출에 return이 있는경우 변수에 담을 수 있다.
         try {
-            const response = await axios.post("http://localhost:8080/auth/signup", JSON.stringify(data), option);    // Promise
+            await axios.post("http://localhost:8080/auth/signup", JSON.stringify(data), option);    // Promise
             setErrorMessages({email: "", password: "", name: ""});
-            console.log(response);
+            alert("회원가입 성공!")
+            navigate("/login");
         } catch (error) {
             setErrorMessages({email: "", password: "", name: "", ...error.response.data.errorData});
         }
