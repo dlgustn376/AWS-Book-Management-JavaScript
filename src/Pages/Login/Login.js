@@ -7,9 +7,9 @@ import { FiUser,FiLock } from 'react-icons/fi';
 import {BsGoogle} from 'react-icons/bs';
 import {SiNaver,SiKakao} from 'react-icons/si';
 import axios from 'axios';
-import { authenticated } from '../../index';
-import { useRecoilState } from 'recoil';
 // import { FcGoogle } from 'react-icons/fc';
+import { refreshState } from '../../atoms/Auth/AuthAtoms';
+import { useRecoilState } from 'recoil';
 
 const container = css`
     display: flex;
@@ -125,7 +125,8 @@ const Login = () => {
 
     const [loginUser, setLoginUser] = useState({email: "", password: ""});
     const [errorMessages, setErrorMessages] = useState({email: "", password: ""});
-    const [ auth ,setAuth] = useRecoilState(authenticated);
+    const [refresh, setRefresh] = useRecoilState(refreshState);
+
     const navigate = useNavigate();
 
     const handleChange = (e) =>{
@@ -150,11 +151,11 @@ const Login = () => {
             setErrorMessages({email: "", password: ""});
             const accessToken = response.data.grantType + " " + response.data.accessToken;
             localStorage.setItem("accessToken", accessToken);
-            setAuth(true);
+            // login해서 들어간 상태와 AuthRoute에서 들어가는 건 상태가 다르다.
+            setRefresh(false);
             navigate("/");
         } catch (error) {
             setErrorMessages({email: "", password: "", ...error.response.data.errorData});
-            setAuth(false);
         }
     }
     // name을 지정해줄 것.
