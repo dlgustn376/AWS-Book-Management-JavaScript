@@ -34,7 +34,7 @@ const Main = () => {
 
     const searchBooks = async () => {
         const searchParam = {
-            page:1
+            page: 1
         }
         const response = await axios.get("http://localhost:8080/books", {params: {...searchParam}});
         console.log(response);
