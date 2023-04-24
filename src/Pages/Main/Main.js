@@ -3,6 +3,8 @@ import { css } from '@emotion/react';
 import React, { useEffect } from 'react';
 import Sidebar from '../../components/Sidebar/Sidebar';
 import BookCard from '../../components/UI/BookCard/BookCard';
+import axios from 'axios';
+
 
 const mainContainer = css`
     padding: 10px;
@@ -24,11 +26,19 @@ const main = css`
 
 const Main = () => {
 
-
-
     useEffect(()=>{
-        
+        searchBooks();
     },[]);
+
+    
+
+    const searchBooks = async () => {
+        const searchParam = {
+            page:1
+        }
+        const response = await axios.get("http://localhost:8080/books", {params: {...searchParam}});
+        console.log(response);
+    };
 
     return (
         <div css={mainContainer}>
