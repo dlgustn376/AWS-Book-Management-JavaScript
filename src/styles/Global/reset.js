@@ -41,9 +41,11 @@ body {
     margin: 10px auto;
 	border: 3px solid #dbdbdb;
 	border-radius: 10px;
-    width: 768px;
-    height: 1000px;
+	padding: 10px;
+    width: 750px;
+    height: 900px;
 	line-height: 1;
+	overflow: hidden;
 }
 ol, ul {
 	list-style: none;

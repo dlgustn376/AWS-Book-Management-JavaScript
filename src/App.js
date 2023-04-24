@@ -17,6 +17,7 @@ function App() {
         <Route exact path="/login" element={ <AuthRouteReactQuery path="/login" element={<Login/>} /> }/>
         <Route path="/register" element={<AuthRouteReactQuery path="/register" element={<Register/>} />}/>
         <Route path="/" element={<AuthRouteReactQuery path="/" element={<Main />} />}/>
+        <Route path="/admin/search" element={<AuthRouteReactQuery path="/" element={<Main />} />}/>
         
         {/* <Route path="/promise" Component={PromiseStudy}></Route>
         <Route path="/callback" Component={Callback}></Route> */}
