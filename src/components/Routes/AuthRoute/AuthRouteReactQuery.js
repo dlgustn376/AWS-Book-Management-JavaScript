@@ -5,7 +5,7 @@ import { Navigate } from 'react-router-dom';
 import { useRecoilState } from 'recoil';
 import { refreshState } from './../../../atoms/Auth/AuthAtoms';
 
-const AuthRouteReactQuery = ({path,  element }) => {
+const AuthRouteReactQuery = ({ path,  element }) => {
     const [refresh, setRefresh] = useRecoilState(refreshState);
     const {data, isLoading} = useQuery(["authenticated"], async () => {
         const accessToken = localStorage.getItem("accessToken");

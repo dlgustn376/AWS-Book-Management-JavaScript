@@ -1,18 +1,32 @@
 /** @jsxImportSource @emotion/react */
 import { css } from '@emotion/react';
-import React from 'react';
+import React, { useState } from 'react';
 import { GrFormClose } from 'react-icons/gr';
 import { BiHome, BiLike, BiListUl, BiLogOut } from 'react-icons/bi';
 import ListButton from './ListButton/ListButton';
+import { useQuery } from 'react-query';
+import axios from 'axios';
 
-const sidebar = css`
+const sidebar = (isOpen) => css`
     position: absolute;
     display: flex;
+    left: ${isOpen? "10px":"-240px"};
     flex-direction: column;
     border: 1px solid #dbdbdb;
     border-radius: 10px;
     width: 250px;
     box-shadow: -1px 0px 5px #dbdbdb; 
+    transition: left 1s ease;
+    
+    ${isOpen? "":
+        `cursor: pointer;`
+    }
+
+    ${isOpen ? "": 
+        `&:hover{
+            left: -220px;
+        }`
+    }
 
 `;
 
@@ -90,17 +104,50 @@ const footer = css`
 `;
 
 const Sidebar = () => {
+    const [isOpen, SetIsOpen] = useState(false); 
+    const {data, isLoading} = useQuery(["principal"], async ()=>{
+        const accessToken = localStorage.getItem("accessToken");
+        const response = await axios.get("http://localhost:8080/auth/principal", 
+        {params: {accessToken}}, 
+        {
+            enabled : accessToken
+        });
+        return response;
+    });
+
+    const sidebarOpenClickHandle = () =>{
+        if(!isOpen){
+            SetIsOpen(true);
+        }
+    };
+
+    const sidebarCloseClickHandle = () =>{
+        SetIsOpen(false);
+    };
+
+    const logoutClickHandle = () =>{
+        if(window.confirm("로그아웃 하시겠습니까?")){
+            localStorage.removeItem("accessToken");
+        }
+    }
+
+    if(isLoading){
+        return (<div>로딩중...</div>)
+    }
+    // console.log(data.data.name)
+    
+    if(!isLoading)
     return (
-        <div css={sidebar}> 
+        <div css={sidebar(isOpen)} onClick={sidebarOpenClickHandle}> 
             <header css={header}>
                 <div css={userIcon}>
-                    C
+                    {data.data.name.substr(0,1)}
                 </div>
                 <div css={userInfo}>
-                    <h1 css={userName}>김삿갓</h1>
-                    <p css={userEmail}>ccc@gmail.com</p>
+                    <h1 css={userName}>{data.data.name}</h1>
+                    <p css={userEmail}>{data.data.email}</p>
                 </div>
-                <div css={closeButton}><GrFormClose/></div>
+                <div css={closeButton} onClick={sidebarCloseClickHandle} ><GrFormClose /></div>
             </header>
             <main css={main}>
                 <ListButton title="Dashboard"><BiHome/></ListButton>
@@ -108,7 +155,7 @@ const Sidebar = () => {
                 <ListButton title="Rental"><BiListUl/></ListButton>
             </main>
             <footer css={footer}>
-                <ListButton title="Logout"><BiLogOut/></ListButton>
+                <ListButton title="Logout" onClick={logoutClickHandle}><BiLogOut/></ListButton>
             </footer>
         </div>
     );
