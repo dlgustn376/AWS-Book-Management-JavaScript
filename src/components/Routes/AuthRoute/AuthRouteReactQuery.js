@@ -24,12 +24,12 @@ const AuthRouteReactQuery = ({ path,  element }) => {
     }, [refresh]);
 
     if(isLoading){
-        console.log("test");
+        // console.log("test");
         return (<div>로딩중...</div>);
     }
 
     if(!isLoading){
-        const permitAll = ["/login","/register", "/password/forgot"];
+        const permitAll = ["/login", "/register", "/password/forgot"];
         if(!data.data){     // data가 false이면 로그인 해야 함(Login page로 이동)
             if(permitAll.includes(path)){
                 return element;

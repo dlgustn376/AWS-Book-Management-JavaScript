@@ -2,16 +2,19 @@
 import { css } from '@emotion/react';
 import React from 'react';
 import { AiOutlineLike, AiFillLike } from 'react-icons/ai';
+import { useNavigate } from 'react-router-dom';
 
 const cardContainer=css`
     display: flex;
     flex-direction: column;
+    justify-content: space-between;
     align-items: center;
     margin: 20px;
     border: 1px solid #dbdbdb;
     border-radius: 7px;
     box-shadow: 0px 0px 5px #dbdbdb;
     width: 300px;
+    max-height: 450px;
     cursor: pointer;
     &:hover{
         box-shadow: 0px 0px 10px #dbdbdb;
@@ -83,8 +86,13 @@ const likeIcon = css`
 `
 
 const BookCard = ({ book }) => {
+    const navigate = useNavigate();
+    const clickHandle = () => {
+        navigate("/book/" + book.bookId);
+    }
+
     return (
-        <div css={cardContainer}>
+        <div css={cardContainer} onClick={clickHandle}>
             <header css={header}>
                 <h1 css={titleText}>{book.bookName}</h1>
             </header>
@@ -95,7 +103,7 @@ const BookCard = ({ book }) => {
                 
             </main>
             <footer css={footer}>
-                <h3 css={like}><div css={likeIcon}><AiOutlineLike/></div>추천: 10 </h3>
+                <h3 css={like}><div css={likeIcon}><AiOutlineLike/></div>추천: {book.likeCount} </h3>
                 <h2>{book.authorName}</h2>
                 <h2>{book.publisherName}</h2>
                 <h2>{book.categoryName}</h2>

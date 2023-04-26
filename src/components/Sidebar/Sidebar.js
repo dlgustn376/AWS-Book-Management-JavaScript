@@ -136,7 +136,7 @@ const Sidebar = () => {
     }
     // console.log(data.data.name)
     
-    if(!isLoading)
+    // if(!isLoading)
     return (
         <div css={sidebar(isOpen)} onClick={sidebarOpenClickHandle}> 
             <header css={header}>

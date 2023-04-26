@@ -6,6 +6,7 @@ import BookCard from '../../components/UI/BookCard/BookCard';
 import axios from 'axios';
 import { useQuery } from 'react-query';
 import { BsMenuDown } from 'react-icons/bs';
+import QueryString from 'qs';
 
 
 const mainContainer = css`
@@ -37,11 +38,11 @@ const categoryButton =css`
     width: 30px;
     height: 30px;
     background-color: white;
+    cursor: pointer;
 `;
 
 
 const categoryGroup = (isOpen) => css`
-
     position: absolute;
     top: 30px;
     right: -151px;
@@ -78,11 +79,11 @@ const main = css`
 
 
 const Main = () => {
-
     const [searchParam, setSerchParam] = useState({page:1, searchValue:"", categoryIds: []});
     const [refresh, setRefresh] = useState(false);
     const [categoryRefresh, setCategoryRefresh] = useState(true);
     const [isOpen, setIsOpen] =useState(false);
+    // const [hasResult, setHasResult] = useState(false);
     const [books, setBooks] = useState([]);
     const [ lastPage, setLastPage ] = useState(1);
     const lastBookRef = useRef();
@@ -91,7 +92,6 @@ const Main = () => {
     // 맨 마지막 스크롤일때, refresh를 바꿔줌
     // 마운트(최초 1회만)되면 실행
     useEffect(()=>{
-        
         const observerService = (entries, observer) =>{
             entries.forEach(entry=> {
                 if(entry.isIntersecting){
@@ -109,7 +109,8 @@ const Main = () => {
         params: searchParam,
         headers: {
             Authorization: localStorage.getItem("accessToken")
-        }
+        },
+        paramsSerializer: params => QueryString.stringify(params, {arrayFormat: 'repeat'})
     }
     
     const searchBooks = useQuery( ["searchBooks"], async () =>{
@@ -120,13 +121,12 @@ const Main = () => {
             if(refresh){
                 setRefresh(false);
             }
-            console.log(response)
             const totalCount = response.data.totalCount;
             setLastPage(totalCount % 20 == 0 ? totalCount/200:Math.ceil (totalCount /20));
             setBooks([...books, ...response.data.bookList]);
             setSerchParam({...searchParam, page: searchParam.page + 1})
         },
-        enabled: refresh && searchParam.page < lastPage + 1
+        enabled: refresh && ((searchParam.page < lastPage + 1)|| searchParam.page === lastPage + 1)
     });
 
     const categories = useQuery(["categories"], async() =>{
@@ -149,23 +149,36 @@ const Main = () => {
     const categoryClickHandle = (e) =>{
         e.stopPropagation();
 
-        if(isOpen && (e.targe === categoryButtonRef.current)){
+        if(isOpen && (e.target === categoryButtonRef.current)){
             setIsOpen(false);
         }else{
             setIsOpen(true);
         }
+        
     }
 
     const categoryCheckHandle = (e) =>{
         if(e.target.checked){
-            setSerchParam({...searchParam, categoryIds:[...searchParam.categoryIds, e.target.value]} );
-            console.log("체크");
-            console.log(searchParam)
+            setSerchParam({...searchParam, page:1, categoryIds:[...searchParam.categoryIds, e.target.value]} );
         }else{
-            setSerchParam({...searchParam, categoryIds:[...searchParam.categoryIds.filter(id => id !== e.target.value)]});
+            setSerchParam({...searchParam, page:1, categoryIds:[...searchParam.categoryIds.filter(id => id !== e.target.value)]});
         }
+        setBooks([]);
+        setRefresh(true);
         // const categorySet = new Set([...searchParam.categoryId]);
         // searchParam()
+    }
+
+    const searchInputHandle = (e) => {
+        setSerchParam({...searchParam, page:1, searchValue: e.target.value});
+    }
+    
+    const searchSubmitHandle = (e) => {
+        if(e.keyCode === 13){
+            setSerchParam({...searchParam, page:1});
+            setBooks([]);
+            setRefresh(true);
+        }
     }
 
     return (
@@ -180,13 +193,13 @@ const Main = () => {
                             {categories.data !== undefined
                                 ? categories.data.data.map(category =>
                                     (<div key={category.categoryId}>
-                                        <input type="checkbox" onChange={categoryCheckHandle} id={"ct-" + category.categoryId} value={category.categoryId}/>
+                                        <input type="checkbox"  onChange={categoryCheckHandle} id={"ct-" + category.categoryId} value={category.categoryId}/>
                                         <label htmlFor={"ct-" + category.categoryId}>{category.categoryName}</label>
                                     </div>)) 
                                 : ""}
                         </div>
                     </button>
-                    <input css={searchInput} type="search" />
+                    <input css={searchInput} type="search" onKeyUp={searchSubmitHandle} onChange={searchInputHandle}/>
                 </div>
             </header>
             <main css={main}>
