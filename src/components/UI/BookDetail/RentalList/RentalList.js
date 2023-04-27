@@ -2,7 +2,7 @@
 import { css } from '@emotion/react';
 import axios from 'axios';
 import React from 'react';
-import { useQuery } from 'react-query';
+import { useMutation, useQuery, useQueryClient } from 'react-query';
 
 const table = css`
     border: 1px solid #dbdbdb;
@@ -16,7 +16,8 @@ const thAndTd = css`
 `;
 
 const RentalList = ({ bookId }) => {
-
+    const queryClient = useQueryClient();
+    // console.log(queryClient.getQueryData("principal").data.bookListId);
     const getRentalList = useQuery(["getRentalList"], async () => {
         const option = {
             headers:{
@@ -24,6 +25,38 @@ const RentalList = ({ bookId }) => {
             }
         }
         return await axios.get(`http://localhost:8080/book/${bookId}/rental/list`, option);
+    });
+
+    const rentalBook = useMutation( async(bookListId)=>{
+        const option ={
+            headers:{
+                "Content-Type":"application/json",
+                Authorization: localStorage.getItem("accessToken")
+            }
+        }
+        return await axios.post(`http://localhost:8080/book/rental/${bookListId}`, JSON.stringify({
+            userId: queryClient.getQueryData("principal").data.userId
+        }),option);
+    },{
+        onSuccess: ()=>{
+            queryClient.invalidateQueries("getRentalList");
+        }
+    });
+
+    const returnbook = useMutation(async(bookListId) => {
+        const option={
+            params:{
+                userId: queryClient.getQueryData("principal").data.userId
+            },
+            headers:{
+                Authorization: localStorage.getItem("accessToken")
+            }
+        }
+        return await axios.delete(`http://localhost:8080/book/rental/${bookListId}`, option);
+    },{
+        onSuccess: ()=>{
+            queryClient.invalidateQueries("getRentalList");
+        }
     });
     
     if(getRentalList.isLoading){
@@ -47,8 +80,9 @@ const RentalList = ({ bookId }) => {
                                 <td css={thAndTd}>{rentalData.bookListId}</td>
                                 <td css={thAndTd}>{rentalData.bookName}</td>
                                 {rentalData.rentalStatus 
-                                    ? (<td css={thAndTd}>대여가능</td>) 
-                                    : (<td css={thAndTd}>대여중</td>)}
+                                    ? (<td css={thAndTd}>대여가능 <button onClick={() => rentalBook.mutate(rentalData.bookListId)} >대여</button></td>) 
+                                    : (<td css={thAndTd}>대여중{rentalData.userId === queryClient.getQueryData("principal").data.userId
+                                            ? (<button onClick={() => returnbook.mutate(rentalData.bookListId)} >반납</button>): ""}</td>)}
                             </tr>)
                     })}
                 </tbody>

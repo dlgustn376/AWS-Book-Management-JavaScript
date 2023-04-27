@@ -71,7 +71,7 @@ const BookDetail = () => {
         }
     });
 
-    const disLike = useMutation(async ()=>{
+    const disLike = useMutation(async () =>{
         const option = {
             params:{
                 userId: queryClient.getQueryData("principal").data.userId
