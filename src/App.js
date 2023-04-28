@@ -8,6 +8,7 @@ import Register from "./Pages/Register/Register";
 import Main from "./Pages/Main/Main";
 import AuthRouteReactQuery from './components/Routes/AuthRoute/AuthRouteReactQuery';
 import BookDetail from "./Pages/BookDetail/BookDetail";
+import BookRegister from "./Pages/Admin/BookRegister/BookRegister";
 
 function App() {
 
@@ -19,7 +20,8 @@ function App() {
         <Route path="/register" element={<AuthRouteReactQuery path="/register" element={<Register/>} />}/>
         <Route path="/" element={<AuthRouteReactQuery path="/" element={<Main />} />}/>
         <Route path="/book/:bookId" element={<AuthRouteReactQuery path="/book" element={<BookDetail />} />}/>
-        <Route path="/admin/search" element={<AuthRouteReactQuery path="/" element={<Main />} />}/>
+        <Route path="/admin/book/register" element={<AuthRouteReactQuery path="/admin/book/register" element={<BookRegister />} />}/>
+        
         
         {/* <Route path="/promise" Component={PromiseStudy}></Route>
         <Route path="/callback" Component={Callback}></Route> */}

@@ -4,8 +4,9 @@ import React, { useState } from 'react';
 import { GrFormClose } from 'react-icons/gr';
 import { BiHome, BiLike, BiListUl, BiLogOut } from 'react-icons/bi';
 import ListButton from './ListButton/ListButton';
-import { useQuery } from 'react-query';
-import axios from 'axios';
+import { useQueryClient } from 'react-query';
+
+
 
 const sidebar = (isOpen) => css`
     position: absolute;
@@ -105,15 +106,7 @@ const footer = css`
 
 const Sidebar = () => {
     const [isOpen, SetIsOpen] = useState(false); 
-    const {data, isLoading} = useQuery(["principal"], async ()=>{
-        const accessToken = localStorage.getItem("accessToken");
-        const response = await axios.get("http://localhost:8080/auth/principal", 
-        {params: {accessToken}}, 
-        {
-            enabled : accessToken
-        });
-        return response;
-    });
+    const queryClient = useQueryClient();
 
     const sidebarOpenClickHandle = () =>{
         if(!isOpen){
@@ -128,24 +121,26 @@ const Sidebar = () => {
     const logoutClickHandle = () =>{
         if(window.confirm("로그아웃 하시겠습니까?")){
             localStorage.removeItem("accessToken");
+            queryClient.invalidateQueries("principal");
         }
     }
 
-    if(isLoading){
-        return (<div>로딩중...</div>)
+    if(queryClient.getQueryState("principal").status === "loading"){
+        return <div>로딩중...</div>
     }
     // console.log(data.data.name)
-    
+    const principalData =  queryClient.getQueryData("principal").data;
+    const roles = principalData.authorities.split(",");
     // if(!isLoading)
     return (
         <div css={sidebar(isOpen)} onClick={sidebarOpenClickHandle}> 
             <header css={header}>
                 <div css={userIcon}>
-                    {data.data.name.substr(0,1)}
+                    {principalData.name.substr(0,1)}
                 </div>
                 <div css={userInfo}>
-                    <h1 css={userName}>{data.data.name}</h1>
-                    <p css={userEmail}>{data.data.email}</p>
+                    <h1 css={userName}>{principalData.name}</h1>
+                    <p css={userEmail}>{principalData.email}</p>
                 </div>
                 <div css={closeButton} onClick={sidebarCloseClickHandle} ><GrFormClose /></div>
             </header>
@@ -153,6 +148,7 @@ const Sidebar = () => {
                 <ListButton title="Dashboard"><BiHome/></ListButton>
                 <ListButton title="Likes"><BiLike/></ListButton>
                 <ListButton title="Rental"><BiListUl/></ListButton>
+                {roles.includes("ROLE_ADMIN")?(<ListButton title="RegisterBookList"><BiListUl/></ListButton>): ""}
             </main>
             <footer css={footer}>
                 <ListButton title="Logout" onClick={logoutClickHandle}><BiLogOut/></ListButton>
